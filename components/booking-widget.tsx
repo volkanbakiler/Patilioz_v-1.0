@@ -461,7 +461,7 @@ function WizardFrame({
   const lastWheelNavRef = useRef(0)
   const motionName =
     motion === "back" ? "patiliozStepBack" : motion === "replace" ? "patiliozStepRise" : "patiliozStepForward"
-  const motionDuration = motion === "replace" ? 240 : 280
+  const motionDuration = motion === "replace" ? 300 : 420
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     const touch = event.changedTouches[0]
@@ -495,43 +495,42 @@ function WizardFrame({
   }
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-card text-card-foreground sm:h-[min(780px,92dvh)]">
-      <div className="flex shrink-0 flex-col bg-card px-4 pb-3 pt-2.5">
-        <div className="mx-auto mb-2 h-1 w-9 rounded-full bg-foreground/10 sm:hidden" aria-hidden="true" />
-        <div className="flex items-center justify-between gap-3">
+    <div className="flex h-[100dvh] max-h-[820px] flex-col overflow-hidden bg-card text-card-foreground sm:h-[min(760px,88dvh)]">
+      <div className="flex shrink-0 flex-col gap-2 border-b border-border/70 bg-card px-3.5 pb-2 pt-2">
+        <div className="mx-auto h-1 w-10 rounded-full bg-foreground/15 sm:hidden" aria-hidden="true" />
+        <div className="flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={onBack}
             disabled={!canGoBack}
             aria-label="Geri"
             className={cn(
-              "-ml-1.5 flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition-all hover:bg-foreground/5 active:scale-90",
-              !canGoBack && "pointer-events-none opacity-0",
+              "flex h-9 w-9 items-center justify-center rounded-full border transition-all",
+              canGoBack
+                ? "border-[var(--navy)] bg-[var(--navy)] text-white shadow-sm shadow-navy/20 active:scale-95"
+                : "pointer-events-none border-transparent bg-transparent text-transparent",
             )}
           >
-            <ChevronLeft size={20} strokeWidth={2.4} />
+            <ChevronLeft size={19} strokeWidth={2.7} />
           </button>
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--coral)]">
-              {PHASES[activeIndex]?.label ?? ""}
-            </span>
-            <span className="text-[11px] font-semibold text-muted-foreground/70">
-              {activeIndex + 1}/{PHASES.length}
-            </span>
+          <div className="min-w-0 text-center">
+            <p className="text-[14px] font-extrabold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+              Hızlı rezervasyon
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Kapat"
-            className="-mr-1.5 flex h-9 w-9 items-center justify-center rounded-full text-foreground/55 transition-all hover:bg-foreground/5 active:scale-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--coral)]/25 bg-[var(--coral)]/10 text-[var(--coral)] transition-all active:scale-95 hover:bg-[var(--coral)] hover:text-white"
           >
-            <X size={19} strokeWidth={2.4} />
+            <X size={19} strokeWidth={2.7} />
           </button>
         </div>
-        <div className="mt-3 flex gap-1.5">
+        <div className="grid grid-cols-5 gap-1.5">
           {PHASES.map((phase, index) => {
+            const active = phase.id === activePhase
             const done = index < activeIndex
-            const active = index === activeIndex
             const clickable = Boolean(phaseTargets?.[phase.id]) && !active
             return (
               <button
@@ -539,20 +538,16 @@ function WizardFrame({
                 key={phase.id}
                 onClick={() => clickable && onPhaseClick?.(phase.id)}
                 disabled={!clickable}
-                aria-label={phase.label}
                 className={cn(
-                  "group relative h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/[0.07] transition-colors",
-                  clickable && "cursor-pointer",
+                  "flex h-7 items-center justify-center rounded-full border px-1 text-[10px] font-extrabold transition-[background-color,border-color,color,box-shadow,transform] duration-300",
+                  clickable && "cursor-pointer active:scale-95",
+                  active && "scale-[1.03] border-[var(--coral)] bg-[var(--coral)] text-white shadow-sm shadow-coral/20",
+                  done && "border-[var(--navy)] bg-[var(--navy)] text-white shadow-sm shadow-navy/10",
+                  !active && !done && "border-border bg-secondary text-muted-foreground",
+                  !clickable && "cursor-default",
                 )}
               >
-                <span
-                  className={cn(
-                    "absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-500 ease-out",
-                    done && "w-full bg-[var(--coral)]",
-                    active && "w-1/2 bg-[var(--coral)]",
-                    !done && !active && "w-0",
-                  )}
-                />
+                {phase.label}
               </button>
             )
           })}
@@ -561,7 +556,7 @@ function WizardFrame({
 
       <div className="relative flex-1 overflow-hidden">
         <div
-          className="h-full overflow-y-auto overflow-x-hidden px-4 pb-4 pt-1 scrollbar-none [scrollbar-width:none]"
+          className="h-full overflow-hidden px-3.5 py-3"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
@@ -574,46 +569,53 @@ function WizardFrame({
             {children}
           </div>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-card to-transparent" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-card to-transparent" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-card to-transparent" aria-hidden="true" />
       </div>
 
-      <div className="shrink-0 bg-card px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+      <div className="flex min-h-[64px] shrink-0 items-center border-t border-border/70 bg-card px-3.5 py-2.5">
         {action ? (
           <button
             type="button"
             onClick={action.onClick}
             disabled={action.disabled}
             className={cn(
-              "flex h-[52px] w-full items-center justify-center rounded-[16px] px-4 text-[15px] font-bold tracking-tight transition-all active:scale-[0.985]",
-              action.disabled && "cursor-not-allowed bg-foreground/[0.06] text-muted-foreground/70",
-              !action.disabled && action.tone === "green" && "bg-emerald-600 text-white shadow-lg shadow-emerald-900/15 hover:bg-emerald-600/95",
-              !action.disabled && action.tone === "navy" && "bg-[var(--navy)] text-white shadow-lg shadow-navy/20 hover:opacity-95",
-              !action.disabled && (!action.tone || action.tone === "coral") && "bg-[var(--coral)] text-white shadow-lg shadow-coral/25 hover:opacity-95",
+              "relative flex h-11 w-full items-center justify-center overflow-hidden rounded-2xl px-4 text-[13px] font-extrabold transition-all active:scale-[0.98]",
+              action.disabled && "cursor-not-allowed bg-border/70 text-muted-foreground",
+              !action.disabled && action.tone === "green" && "bg-emerald-600 text-white shadow-sm shadow-emerald-900/15",
+              !action.disabled && action.tone === "navy" && "bg-[var(--navy)] text-white shadow-sm shadow-navy/15",
+              !action.disabled && (!action.tone || action.tone === "coral") && "bg-[var(--coral)] text-white shadow-sm shadow-coral/20",
             )}
           >
-            {action.label}
+            {!action.disabled && <span className="patilioz-cta-sheen" aria-hidden="true" />}
+            <span className="relative">{action.label}</span>
           </button>
         ) : (
-          <div className="flex h-[52px] w-full items-center justify-center gap-2 text-muted-foreground">
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[var(--coral)]/12 text-[var(--coral)]">
-              <Check size={11} strokeWidth={3} />
-            </span>
-            <p className="text-[13px] font-medium">{hint ?? "Bir seçenek seçin"}</p>
+          <div className="flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-secondary/80 px-3 py-2.5">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-card text-[var(--coral)] shadow-sm">
+                <Check size={14} strokeWidth={2.5} />
+              </span>
+              <p className="text-[11px] font-bold text-foreground">{hint ?? "Seçince ilerler"}</p>
+            </div>
+            <span className="h-1.5 w-10 rounded-full bg-foreground/15 motion-safe:animate-pulse" aria-hidden="true" />
           </div>
         )}
       </div>
       <style>{`
         @keyframes patiliozStepForward {
-          0% { opacity: 0; transform: translate3d(40px, 0, 0); }
-          100% { opacity: 1; transform: translate3d(0, 0, 0); }
+          0% { opacity: 0; transform: translate3d(28px, 10px, 0) scale(0.985); filter: blur(8px); }
+          58% { opacity: 1; filter: blur(0); }
+          100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
         @keyframes patiliozStepBack {
-          0% { opacity: 0; transform: translate3d(-40px, 0, 0); }
-          100% { opacity: 1; transform: translate3d(0, 0, 0); }
+          0% { opacity: 0; transform: translate3d(-24px, 8px, 0) scale(0.988); filter: blur(7px); }
+          60% { opacity: 1; filter: blur(0); }
+          100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
         @keyframes patiliozStepRise {
-          0% { opacity: 0; transform: translate3d(0, 8px, 0); }
-          100% { opacity: 1; transform: translate3d(0, 0, 0); }
+          0% { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.99); filter: blur(6px); }
+          100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
         .patilioz-cta-sheen {
           position: absolute;
@@ -639,11 +641,11 @@ function WizardFrame({
 
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="mb-4">
-      <h2 className="text-[23px] font-bold leading-[1.12] tracking-[-0.02em] text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+    <div className="mb-3">
+      <h2 className="text-[21px] font-extrabold leading-[1.05] text-foreground sm:text-[22px]" style={{ fontFamily: "var(--font-display)" }}>
         {title}
       </h2>
-      {subtitle && <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{subtitle}</p>}
+      {subtitle && <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{subtitle}</p>}
     </div>
   )
 }
@@ -799,12 +801,10 @@ function CompactCalendar({
 function QuickDateChips({
   mode,
   outboundDate,
-  selectedIso,
   onSelect,
 }: {
   mode: "outbound" | "return"
   outboundDate?: string
-  selectedIso?: string
   onSelect: (iso: string) => void
 }) {
   const todayIso = toISO(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
@@ -822,24 +822,16 @@ function QuickDateChips({
         ]
   return (
     <div className="mb-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-      {options.map((option) => {
-        const active = Boolean(option.iso) && option.iso === selectedIso
-        return (
-          <button
-            key={option.label}
-            type="button"
-            onClick={() => option.iso && onSelect(option.iso)}
-            className={cn(
-              "shrink-0 rounded-full border px-4 py-2 text-[13px] font-semibold transition-all active:scale-95",
-              active
-                ? "border-[var(--coral)] bg-[var(--coral)] text-white shadow-sm shadow-coral/20"
-                : "border-border/70 bg-card text-foreground hover:border-border",
-            )}
-          >
-            {option.label}
-          </button>
-        )
-      })}
+      {options.map((option) => (
+        <button
+          key={option.label}
+          type="button"
+          onClick={() => option.iso && onSelect(option.iso)}
+          className="shrink-0 rounded-full border border-border bg-secondary px-3.5 py-2 text-[12px] font-extrabold text-foreground transition-all active:scale-95"
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   )
 }
@@ -1532,7 +1524,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
         const index = flowSteps.indexOf(stepRef.current)
         if (index >= 0 && index < flowSteps.length - 1) moveTo(flowSteps[index + 1], "forward")
       }
-    }, 120)
+    }, 210)
   }, [flowSteps, moveTo])
 
   useEffect(() => {
@@ -2033,7 +2025,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
                   <AutoPhoto src={pet.image} gradient={pet.gradient} alt={pet.label} selected={selected} />
                   <SelectCheck active={selected} />
                   <div className="p-3">
-                    <p className="text-[15px] font-bold tracking-tight text-foreground">{pet.label}</p>
+                    <p className="text-[15px] font-extrabold text-foreground">{pet.label}</p>
                     <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">{pet.desc}</p>
                   </div>
                 </button>
@@ -2065,7 +2057,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
                   <AutoPhoto src={size.image} gradient={size.gradient} alt={size.label} selected={selected} />
                   <SelectCheck active={selected} />
                   <div className="p-2.5">
-                    <p className="text-[14px] font-bold tracking-tight text-foreground">{size.label}</p>
+                    <p className="text-[14px] font-extrabold text-foreground">{size.label}</p>
                     <p className="mt-0.5 text-[11px] font-extrabold text-muted-foreground">{size.kg}</p>
                     <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-muted-foreground/75">{size.desc}</p>
                   </div>
@@ -2120,7 +2112,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
                   <AutoPhoto src={option.image} gradient={option.gradient} alt={option.label} selected={selected} />
                   <SelectCheck active={selected} />
                   <div className="p-3">
-                    <p className="text-[14px] font-bold tracking-tight text-foreground">{option.label}</p>
+                    <p className="text-[14px] font-extrabold text-foreground">{option.label}</p>
                     <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">{option.desc}</p>
                   </div>
                 </button>
@@ -2136,7 +2128,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
       {step === "service" && (
         <div>
           <SectionTitle title="Nasıl eşlik edelim?" subtitle="Hizmet türü; tarih, bekleme ve saat seçimlerini belirler." />
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {SERVICES.map((service) => {
               const selected = tripType === service.value
               return (
@@ -2145,33 +2137,22 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
                   type="button"
                   onClick={() => selectService(service.value)}
                   className={cn(
-                    "relative flex w-full items-center gap-3.5 rounded-[18px] border p-4 text-left transition-all active:scale-[0.99]",
-                    selected
-                      ? "border-[var(--coral)] bg-[var(--coral)]/[0.04] shadow-sm shadow-coral/10"
-                      : "border-border/70 bg-card hover:border-border",
+                    "relative flex w-full items-center gap-3 rounded-[22px] border bg-card p-3.5 text-left shadow-sm transition-all active:scale-[0.99]",
+                    selected ? "border-[var(--coral)] ring-4 ring-[var(--coral)]/10" : "border-border",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors",
-                      selected ? "bg-[var(--coral)] text-white" : "bg-[var(--navy)]/[0.06] text-[var(--navy)]",
-                    )}
-                  >
-                    {service.value === "one-way" && <Navigation size={19} strokeWidth={2.2} />}
-                    {service.value === "round-trip" && <CalendarDays size={19} strokeWidth={2.2} />}
-                    {service.value === "accompanied" && <ShieldCheck size={19} strokeWidth={2.2} />}
+                  <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white", selected ? "bg-[var(--coral)]" : "bg-[var(--navy)]")}>
+                    {service.value === "one-way" && <Navigation size={20} />}
+                    {service.value === "round-trip" && <CalendarDays size={20} />}
+                    {service.value === "accompanied" && <ShieldCheck size={20} />}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-bold tracking-tight text-foreground">{service.label}</span>
-                    <span className="mt-0.5 block text-[12.5px] leading-snug text-muted-foreground">{service.desc}</span>
+                    <span className="block text-[16px] font-extrabold text-foreground">{service.label}</span>
+                    <span className="mt-0.5 block text-[12px] font-semibold text-muted-foreground">{service.desc}</span>
+                    <span className="mt-1 block text-[11px] text-muted-foreground/70">{service.meta}</span>
                   </span>
-                  <span
-                    className={cn(
-                      "flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 transition-all",
-                      selected ? "border-[var(--coral)] bg-[var(--coral)] text-white" : "border-border text-transparent",
-                    )}
-                  >
-                    <Check size={12} strokeWidth={3.5} />
+                  <span className={cn("flex h-6 w-6 items-center justify-center rounded-full border", selected ? "border-[var(--coral)] bg-[var(--coral)] text-white" : "border-border text-transparent")}>
+                    <Check size={13} strokeWidth={3} />
                   </span>
                 </button>
               )
@@ -2186,7 +2167,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
             title="Gidiş tarihi"
             subtitle={tripType === "one-way" ? "Tek yön için tarihi seçin; ardından teslim noktasını netleştireceğiz." : "Müsaitlik tarih, rota ve hizmet tipine göre hesaplanır."}
           />
-          <QuickDateChips mode="outbound" selectedIso={outboundDate} onSelect={selectOutboundDate} />
+          <QuickDateChips mode="outbound" onSelect={selectOutboundDate} />
           <CompactCalendar value={outboundDate} onChange={selectOutboundDate} />
           {tripType === "round-trip" && (
             <div className="mt-3">
@@ -2199,7 +2180,7 @@ export function BookingWidget({ initial, onClose }: BookingWidgetProps) {
       {step === "return-date" && (
         <div>
           <SectionTitle title="Dönüş tarihi" subtitle="Dönüş aynı gün olmak zorunda değil; operasyonu net tarihe göre planlarız." />
-          <QuickDateChips mode="return" outboundDate={outboundDate} selectedIso={returnDate} onSelect={selectReturnDate} />
+          <QuickDateChips mode="return" outboundDate={outboundDate} onSelect={selectReturnDate} />
           <CompactCalendar value={returnDate} minIso={outboundDate} onChange={selectReturnDate} />
           <p className="mt-2 text-[11px] font-semibold text-muted-foreground">Dönüş gidişten önce olamaz.</p>
           <div className="mt-3">
